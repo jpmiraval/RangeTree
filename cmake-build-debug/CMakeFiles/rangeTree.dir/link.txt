@@ -1,0 +1,1 @@
+/home/linuxbrew/.linuxbrew/bin/c++  -g   CMakeFiles/rangeTree.dir/Experimentos.cpp.o  -o rangeTree 

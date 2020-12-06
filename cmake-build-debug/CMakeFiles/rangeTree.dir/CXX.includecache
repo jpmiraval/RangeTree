@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jpalexander1706/CLionProjects/rangeTree/Experimentos.cpp
+RangeTree.h
+/home/jpalexander1706/CLionProjects/rangeTree/RangeTree.h
+chrono
+-
+
+/home/jpalexander1706/CLionProjects/rangeTree/RangeTree.h
+bits/stdc++.h
+-
+iostream
+-
+vector
+-
+stdlib.h
+-
+time.h
+-
+utility
+-
+
