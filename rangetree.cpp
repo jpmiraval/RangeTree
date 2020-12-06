@@ -1,62 +1,274 @@
-
-
-#include<iostream>
+#include<bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <utility>
 using namespace std;
 
-struct Nodo
+bool sortbysec(const pair<int,int> &a,
+               const pair<int,int> &b)
 {
-     int x;
-     Nodo * m_pSon[2];
-     Nodo(int n)
-     {
-        x = n;
-        m_pSon[0]=0;
-        m_pSon[1]=0; 
-     }
-};
-
-Nodo * create_range_tree(int v[],int l, int h)
-{
-   if(l==h)
-   {
-     Nodo * padre = new Nodo(v[l]);
-     padre->m_pSon[0] = new Nodo(v[l]);
-     return padre;
-
-   } 
-   if( l+1==h)
-   {
-     Nodo * padre = new Nodo((v[l] + v[h])/2);
-     padre->m_pSon[0] = new Nodo(v[l]);
-     padre->m_pSon[1] = new Nodo(v[h]);
-     return padre;
-   }
-   int m = (l + h)/2;
-   Nodo * pl = create_range_tree(v,l, m);
-   Nodo * pr = create_range_tree(v,m+1, h);
-   
-   Nodo * padre = new Nodo((pl->x + pr->x)/2);
-   padre->m_pSon[0] = pl; 
-   padre->m_pSon[1] = pr;
-   return padre;
+    return (a.second < b.second);
 }
 
-void print(Nodo * r)
-{
-   if(!r) return;
-   print(r->m_pSon[0]);
-   if(!r->m_pSon[0] && !r->m_pSon[1])
+
+
+struct Nodo2D{
+    int x;
+    int y;
+    Nodo2D * m_pSon[2];
+    Nodo2D * next;
+    Nodo2D * prev;
+    Nodo2D * ROOTY;
+
+    Nodo2D(int n, int m){
+        x = n;
+        y = m;
+        m_pSon[0]=0;
+        m_pSon[1]=0;
+        next = nullptr;
+        prev = nullptr;
+        ROOTY = nullptr;
+    }
+};
+
+Nodo2D * buscarHoja_Izquierda(Nodo2D * node){
+    if (node->m_pSon[0]== nullptr){
+        return node;
+    }
+    return buscarHoja_Izquierda(node->m_pSon[0]);
+}
+
+Nodo2D * buscarHoja_Derecha(Nodo2D * node){
+    if (node->m_pSon[1]== nullptr){
+        return node;
+    }
+    return buscarHoja_Derecha(node->m_pSon[1]);
+}
+
+Nodo2D * create_range_treeY(vector<pair<int, int>> v, int l, int h ){
+    if(l==h){
+        Nodo2D * padre = new Nodo2D(v[l].first, v[l].second);
+        padre->m_pSon[0] = new Nodo2D(v[l].first, v[l].second);
+        padre->m_pSon[1] = 0;
+        return padre;
+    }
+
+    if(l+1==h){
+        Nodo2D * padre = new Nodo2D((v[l].first + v[h].first)/2, (v[l].second + v[h].second)/2);
+        padre->m_pSon[0] = new Nodo2D(v[l].first, v[l].second);
+        padre->m_pSon[1] = new Nodo2D(v[h].first, v[h].second);
+        padre->m_pSon[0]->next = padre->m_pSon[1];
+        padre->m_pSon[1]->prev = padre->m_pSon[0];
+        return padre;
+    }
+
+    int m = (l + h)/2;
+    Nodo2D * pl = create_range_treeY(v,l, m);
+    Nodo2D * pr = create_range_treeY(v,m+1, h );
+
+    Nodo2D * hijoIzq = buscarHoja_Derecha(pr);
+    Nodo2D * hijoDer = buscarHoja_Izquierda(pl);
+
+    hijoDer->next = hijoIzq;
+    hijoIzq->prev = hijoDer;
+
+
+    Nodo2D * padre = new Nodo2D((pl->x + pr->x)/2, (pl->y + pr->y)/2);
+    padre->m_pSon[0] = pl;
+    padre->m_pSon[1] = pr;
+
+    return padre;
+}
+
+
+Nodo2D * create_range_tree(vector<pair<int, int>> v, int l, int h ){
+
+    vector<pair<int, int>> ysorted = v;
+
+    sort(ysorted.begin(), ysorted.end(), sortbysec);
+
+    if(l==h){
+        Nodo2D * padre = new Nodo2D(v[l].first, v[l].second);
+        padre->m_pSon[0] = new Nodo2D(v[l].first, v[l].second);
+        padre->ROOTY = create_range_treeY(ysorted,l, h );
+        return padre;
+    }
+    if(l+1==h){
+        Nodo2D * padre = new Nodo2D((v[l].first + v[h].first)/2, (v[l].second + v[h].second)/2);
+        padre->m_pSon[0] = new Nodo2D(v[l].first, v[l].second);
+        padre->m_pSon[1] = new Nodo2D(v[h].first, v[h].second);
+        padre->m_pSon[0]->next = padre->m_pSon[1];
+        padre->m_pSon[1]->prev = padre->m_pSon[0];
+        padre->ROOTY = create_range_treeY(ysorted,l, h );
+        return padre;
+    }
+
+    int m = (l + h)/2;
+    Nodo2D * pl = create_range_tree(v,l, m);
+    Nodo2D * pr = create_range_tree(v,m+1, h );
+
+
+    Nodo2D * Y_tree = create_range_treeY(ysorted,l, h );
+
+    Nodo2D * hijoIzq = buscarHoja_Derecha(pr);
+    Nodo2D * hijoDer = buscarHoja_Izquierda(pl);
+
+    hijoDer->next = hijoIzq;
+    hijoIzq->prev = hijoDer;
+
+
+    Nodo2D * padre = new Nodo2D((pl->x + pr->x)/2, (pl->y + pr->y)/2);
+    padre->m_pSon[0] = pl;
+    padre->m_pSon[1] = pr;
+    padre->ROOTY=Y_tree;
+
+    return padre;
+}
+
+vector<int> range_search(int inf, int sup, Nodo2D *root){
+    vector<int> ans;
+    Nodo2D * node = root;
+
+    while( node->m_pSon[0] != nullptr){
+        if(inf < node->x){
+            node = node->m_pSon[0];
+        }else{
+            node = node->m_pSon[1];
+        }
+    }
+// //ya se encontro primer cvalor del range -> node = menor nodo.
+
+    //cout << node->x << " ";
+
+    while(node->x < sup){
+        ans.push_back(node->x);
+        node = node->next;
+    }
+
+    return ans;
+}
+
+
+
+struct Nodo{
+    int x;
+    Nodo * m_pSon[2];
+    Nodo * next;
+    Nodo * prev;
+
+    Nodo(int n){
+        x = n;
+        m_pSon[0]=0;
+        m_pSon[1]=0;
+        next = nullptr;
+        prev = nullptr;
+    }
+};
+
+Nodo * buscarHoja_Izquierda(Nodo * node){
+    if (node->m_pSon[0]== nullptr){
+        return node;
+    }
+    return buscarHoja_Izquierda(node->m_pSon[1]);
+}
+
+Nodo * buscarHoja_Derecha(Nodo * node){
+    if (node->m_pSon[0]== nullptr){
+        return node;
+    }
+    return buscarHoja_Derecha(node->m_pSon[0]);
+}
+
+Nodo * create_range_tree(vector<int> v,int l, int h){
+
+    if(l==h){
+        Nodo * padre = new Nodo(v[l]);
+        padre->m_pSon[0] = new Nodo(v[l]);
+        return padre;
+    }
+    if(l+1==h){
+        Nodo * padre = new Nodo((v[l] + v[h])/2);
+        padre->m_pSon[0] = new Nodo(v[l]);
+        padre->m_pSon[1] = new Nodo(v[h]);
+        padre->m_pSon[0]->next = padre->m_pSon[1];
+        padre->m_pSon[1]->prev = padre->m_pSon[0];
+        return padre;
+    }
+    int m = (l + h)/2;
+    Nodo * pl = create_range_tree(v,l, m);
+    Nodo * pr = create_range_tree(v,m+1, h );
+
+    Nodo * hijoIzq = buscarHoja_Derecha(pr);
+    Nodo * hijoDer = buscarHoja_Izquierda(pl);
+
+    hijoDer->next = hijoIzq;
+    hijoIzq->prev = hijoDer;
+
+
+    Nodo * padre = new Nodo((pl->x + pr->x)/2);
+    padre->m_pSon[0] = pl;
+    padre->m_pSon[1] = pr;
+    return padre;
+}
+
+vector<int> range_search(int inf, int sup, Nodo *root){
+    vector<int> ans;
+    Nodo * node = root;
+
+    while( node->m_pSon[0] != nullptr){
+        if(inf < node->x){
+            node = node->m_pSon[0];
+        }else{
+            node = node->m_pSon[1];
+        }
+    }
+// //ya se encontro primer cvalor del range -> node = menor nodo.
+
+    //cout << node->x << " ";
+
+ while(node->x < sup){
+       ans.push_back(node->x);
+       node = node->next;
+ }
+
+    return ans;
+}
+
+void print(Nodo * r){
+    if(!r) return;
+    print(r->m_pSon[0]);
+    if(!r->m_pSon[0] && !r->m_pSon[1])
         cout<<r->x<<" ";
-   print(r->m_pSon[1]);
-   
+    print(r->m_pSon[1]);
+
+}
+
+void print(Nodo2D * r){
+    if(!r) return;
+    print(r->m_pSon[0]);
+    if(!r->m_pSon[0] && !r->m_pSon[1])
+        cout<<r->y<<" ";
+    print(r->m_pSon[1]);
+
 }
 
 int main()
 {
-    int v[] = {36,37,42,51,62,72};
-    Nodo * root = create_range_tree(v,0,5);
-    print(root);
+     vector<pair<int,int>> v = {{1,2}, {3,5}, {4,8},{7,6}, {8,1}};
 
+     Nodo2D * root = create_range_tree(v, 0, 4);
 
-    return 1;
+     print(root->ROOTY);
+
+    /*
+    vector<int> v = {5,27,35,52,62,82,85,90};
+    Nodo * root = create_range_tree(v,0,7);
+    //print(root);
+    vector<int> test = range_search(25, 80, root);
+
+     for(auto a : test){
+       cout << a << " ";
+     };
+*/
+    return 0;
 }
