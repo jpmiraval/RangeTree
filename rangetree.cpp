@@ -125,27 +125,70 @@ Nodo2D * create_range_tree(vector<pair<int, int>> v, int l, int h ){
     return padre;
 }
 
-vector<int> range_search(int inf, int sup, Nodo2D *root){
-    vector<int> ans;
+void print(Nodo2D * r){
+    if(!r) return;
+    print(r->m_pSon[0]);
+    if(!r->m_pSon[0] && !r->m_pSon[1])
+        cout<<r->x<<" ";
+    print(r->m_pSon[1]);
+
+}
+
+vector<pair<int,int>> range_search(int infx, int supx, int infy, int supy,  Nodo2D * root){
+
+    queue<Nodo2D * > cola;
+    vector<pair<int, int>> ans;
     Nodo2D * node = root;
 
+    while(infx < node->x && supx < node->x){
+        node = node->m_pSon[0];
+    }
+
+    while(infx > node->x && supx > node->x){
+        node = node->m_pSon[1];
+    }
+
     while( node->m_pSon[0] != nullptr){
-        if(inf < node->x){
+        if(infx < node->x){
             node = node->m_pSon[0];
+            if(node->m_pSon[1] != nullptr)
+            cola.push(node->m_pSon[1]);
         }else{
             node = node->m_pSon[1];
         }
     }
-// //ya se encontro primer cvalor del range -> node = menor nodo.
 
-    //cout << node->x << " ";
+    while( node->m_pSon[1] != nullptr){
+        if(supx > node->x){
+            node = node->m_pSon[1];
+            cola.push(node->m_pSon[0]);
+        }else{
+            node = node->m_pSon[0];
+        }
+    }
 
-    while(node->x < sup){
-        ans.push_back(node->x);
-        node = node->next;
+    while(!cola.empty()){
+
+        Nodo2D * node_temp = cola.front();
+        cola.pop();
+
+        while( node_temp->m_pSon[0] != nullptr){
+            if(infy <= node_temp->y){
+                node_temp = node_temp->m_pSon[0];
+            }else{
+                node_temp = node_temp->m_pSon[1];
+            }
+        }
+
+        while(node_temp != nullptr && node_temp->y <= supy){
+            ans.push_back(make_pair(node_temp->x, node_temp->y));
+            node_temp = node_temp->next;
+        }
+
     }
 
     return ans;
+
 }
 
 
@@ -222,14 +265,11 @@ vector<int> range_search(int inf, int sup, Nodo *root){
             node = node->m_pSon[1];
         }
     }
-// //ya se encontro primer cvalor del range -> node = menor nodo.
 
-    //cout << node->x << " ";
-
- while(node->x < sup){
+    while(node->x < sup){
        ans.push_back(node->x);
        node = node->next;
- }
+    }
 
     return ans;
 }
@@ -243,14 +283,7 @@ void print(Nodo * r){
 
 }
 
-void print(Nodo2D * r){
-    if(!r) return;
-    print(r->m_pSon[0]);
-    if(!r->m_pSon[0] && !r->m_pSon[1])
-        cout<<r->y<<" ";
-    print(r->m_pSon[1]);
 
-}
 
 int main()
 {
@@ -258,7 +291,13 @@ int main()
 
      Nodo2D * root = create_range_tree(v, 0, 4);
 
-     print(root->ROOTY);
+    vector<pair<int,int>> test = range_search(3, 8, 4, 9, root);
+
+    for(auto a : test){
+        cout << a.first << " " << a.second << endl;
+    };
+
+     //print(root->ROOTY);
 
     /*
     vector<int> v = {5,27,35,52,62,82,85,90};
